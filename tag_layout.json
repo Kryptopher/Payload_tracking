@@ -1,0 +1,29 @@
+{
+  "name": "three_tag_wall_target",
+  "tag_family": "tagStandard41h12",
+  "tag_size_m": 0.10,
+  "target_center_m": [0.0, 0.0, 0.0],
+  "coordinate_frame": "Target plane, meters: +X right across the target, +Y up the target, Z=0 on the tag faces.",
+  "notes": [
+    "Measure tag_size_m across the outer black square.",
+    "Keep all three printed tags in the same orientation unless rotation_deg is set per tag.",
+    "Use the widest triangle that fits the target and remains visible in the camera."
+  ],
+  "tags": [
+    {
+      "id": 0,
+      "center_m": [-0.20, -0.12, 0.0],
+      "rotation_deg": 0.0
+    },
+    {
+      "id": 1,
+      "center_m": [0.20, -0.12, 0.0],
+      "rotation_deg": 0.0
+    },
+    {
+      "id": 2,
+      "center_m": [0.0, 0.18, 0.0],
+      "rotation_deg": 0.0
+    }
+  ]
+}

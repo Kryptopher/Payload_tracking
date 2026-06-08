@@ -1,0 +1,4 @@
+depthai
+numpy
+opencv-python
+pupil-apriltags

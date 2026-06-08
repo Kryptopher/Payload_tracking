@@ -1,0 +1,99 @@
+{
+  "name": "box_100mm_12tag_main_geometry",
+  "tag_family": "tagStandard41h12",
+  "tag_size_m": 0.04,
+  "target_center_m": [0.0, 0.0, 0.0],
+  "box_size_m": [0.10, 0.10, 0.10],
+  "coordinate_frame": "Matches payload_perception ArucoTracker body frame: origin at cube center; tag UV layout (50,80), (20,20), (80,20) mm on each vertical face.",
+  "notes": [
+    "Geometry synced with src/payload_perception/payload_perception/payload_tracker.py ArucoTracker.",
+    "IDs 0-2 +X face, 3-5 -Z face, 6-8 -X face, 9-11 +Z face.",
+    "Measure tag_size_m across the outer black square (40 mm default)."
+  ],
+  "tags": [
+    {
+      "id": 0,
+      "face": "plus_x",
+      "center_m": [0.05, 0.03, 0.0],
+      "normal_m": [1.0, 0.0, 0.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 1,
+      "face": "plus_x",
+      "center_m": [0.05, -0.03, -0.03],
+      "normal_m": [1.0, 0.0, 0.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 2,
+      "face": "plus_x",
+      "center_m": [0.05, -0.03, 0.03],
+      "normal_m": [1.0, 0.0, 0.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 3,
+      "face": "minus_z",
+      "center_m": [0.0, 0.03, -0.05],
+      "normal_m": [0.0, 0.0, -1.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 4,
+      "face": "minus_z",
+      "center_m": [0.03, -0.03, -0.05],
+      "normal_m": [0.0, 0.0, -1.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 5,
+      "face": "minus_z",
+      "center_m": [-0.03, -0.03, -0.05],
+      "normal_m": [0.0, 0.0, -1.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 6,
+      "face": "minus_x",
+      "center_m": [-0.05, 0.03, 0.0],
+      "normal_m": [-1.0, 0.0, 0.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 7,
+      "face": "minus_x",
+      "center_m": [-0.05, -0.03, 0.03],
+      "normal_m": [-1.0, 0.0, 0.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 8,
+      "face": "minus_x",
+      "center_m": [-0.05, -0.03, -0.03],
+      "normal_m": [-1.0, 0.0, 0.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 9,
+      "face": "plus_z",
+      "center_m": [0.0, 0.03, 0.05],
+      "normal_m": [0.0, 0.0, 1.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 10,
+      "face": "plus_z",
+      "center_m": [-0.03, -0.03, 0.05],
+      "normal_m": [0.0, 0.0, 1.0],
+      "up_m": [0.0, 1.0, 0.0]
+    },
+    {
+      "id": 11,
+      "face": "plus_z",
+      "center_m": [0.03, -0.03, 0.05],
+      "normal_m": [0.0, 0.0, 1.0],
+      "up_m": [0.0, 1.0, 0.0]
+    }
+  ]
+}
