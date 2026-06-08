@@ -1,6 +1,6 @@
 # Standalone Wall Tracker
 
-This tracker is separate from the ROS payload tracker. It uses a fixed OAK-D S2
+This tracker is separate from the ROS payload tracker. It uses a fixed OAK-D Pro
 PoE camera to track a rigid AprilTag target and streams an annotated camera view
 plus a top-down X/Y plot.
 
@@ -64,13 +64,13 @@ Start the cube tracker:
 Then open:
 
 ```text
-http://192.168.0.101:8090/
+http://host:8090/
 ```
 
 Useful overrides:
 
 ```bash
-OAK_IP=192.168.0.153 STREAM_PORT=8090 ./run_wall_tracker.sh
+OAK_IP=<CAMERA_IP> STREAM_PORT=8090 ./run_wall_tracker.sh
 
 ./run_wall_tracker.sh -- \
   --layout tag_layout_box_100mm.json

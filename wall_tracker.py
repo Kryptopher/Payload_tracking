@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Standalone OAK-D S2 PoE AprilTag wall/target tracker.
+Standalone OAK-D Pro PoE AprilTag wall/target tracker.
 
 This program is intentionally independent of the ROS payload tracker. It uses a
 fixed OAK camera, a rigid AprilTag layout on the moving target, and one PnP

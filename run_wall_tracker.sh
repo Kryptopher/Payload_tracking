@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Standalone OAK-D AprilTag wall/cube tracker.
+# Standalone OAK-D Pro PoE AprilTag wall/cube tracker.
 #
 #   ./run_wall_tracker.sh
 #   ./run_wall_tracker.sh -- --layout tag_layout_box_100mm.json

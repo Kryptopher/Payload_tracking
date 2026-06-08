@@ -8,7 +8,7 @@ across visible tags. Large per-tag residuals usually mean tag_size_m or
 center_m in the layout JSON does not match the physical cube.
 
 Usage:
-    python3 calibrate_cube_layout.py --ip 192.168.0.153 \\
+    python3 calibrate_cube_layout.py --ip <CAMERA_IP> \\
         --layout tag_layout_box_100mm.json --duration 5
     python3 calibrate_cube_layout.py --write-output tag_layout_calibrated.json
 """
