@@ -67,6 +67,26 @@ Then open:
 http://host:8090/
 ```
 
+## Camera IP
+
+The tracker connects to the OAK camera at `192.168.0.153` by default. To use a
+different camera, set `OAK_IP` when launching:
+
+```bash
+OAK_IP=<CAMERA_IP> ./run_wall_tracker.sh
+```
+
+You can also pass the IP directly to the Python programs:
+
+```bash
+python3 wall_tracker.py --ip <CAMERA_IP> --layout tag_layout_box_100mm.json
+python3 calibrate_cube_layout.py --ip <CAMERA_IP>
+```
+
+The web stream address is separate from the camera IP. Open
+`http://host:8090/`, replacing `host` with the computer running the tracker. To
+change the web stream port, set `STREAM_PORT` or pass `--stream-port`.
+
 Useful overrides:
 
 ```bash
