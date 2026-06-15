@@ -38,6 +38,30 @@ cd ~/crane_ws/ops/wall_tracker/single_marker_tracker
 The layout is
 `tag_layout_8x8x6in_36h11_12front_13left_14back_15right.json`.
 
+Windows PowerShell:
+
+```powershell
+cd Payload_tracking\single_marker_tracker
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+.\run_wall_tracker.ps1
+```
+
+Then open:
+
+```text
+http://localhost:8090
+```
+
+Optional PowerShell environment overrides:
+
+```powershell
+$env:STREAM_PORT = "8091"
+$env:PYTHON = ".\.venv\Scripts\python.exe"
+$env:OAK_IP = "192.168.0.153"  # only for PoE/manual IP, not needed for USB
+```
+
 ## Tag Layout
 
 The cube target is a `100 mm x 100 mm x 100 mm` box with 40 mm AprilTags. Use
