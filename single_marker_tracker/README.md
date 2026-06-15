@@ -4,6 +4,27 @@ This tracker is separate from the ROS payload tracker. It uses a fixed OAK-D Pro
 PoE camera to track a rigid AprilTag target and streams an annotated camera view
 plus a top-down X/Y plot.
 
+## Single-Marker Payload Variant
+
+This copied tracker defaults to:
+
+- AprilTag family: `tag36h11`
+- Tag size: `0.100 m`
+- Payload size: `8 x 8 x 6 in`
+- Tag ID `12` centered on the left face
+- Tag ID `13` centered on the right face
+
+Run it from this folder with:
+
+```bash
+cd ~/crane_ws/ops/wall_tracker/single_marker_tracker
+./run_wall_tracker.sh -- --ros
+```
+
+The layout is `tag_layout_8x8x6in_36h11_left12_right13.json`. If the left/right
+sign is flipped in the display, swap the `center_m` and `normal_m` signs for IDs
+12 and 13 in that JSON.
+
 ## Tag Layout
 
 The cube target is a `100 mm x 100 mm x 100 mm` box with 40 mm AprilTags. Use

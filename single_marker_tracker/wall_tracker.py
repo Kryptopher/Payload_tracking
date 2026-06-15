@@ -198,8 +198,8 @@ class TagLayout:
     ):
         if tag_size_m <= 0:
             raise ValueError("tag_size_m must be positive")
-        if len(tags) < 3:
-            raise ValueError("layout should contain at least three tags")
+        if len(tags) < 1:
+            raise ValueError("layout should contain at least one tag")
         self.name = name
         self.tag_size_m = float(tag_size_m)
         self.tag_family = tag_family
