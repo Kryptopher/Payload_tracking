@@ -11,8 +11,22 @@ This copied tracker defaults to:
 - AprilTag family: `tag36h11`
 - Tag size: `0.100 m`
 - Payload size: `8 x 8 x 6 in`
-- Tag ID `12` centered on the left face
-- Tag ID `13` centered on the right face
+- USB OAK-D S2 auto-discovery
+- Camera socket `CAM_A`
+- Tag ID `12` centered on the payload front face
+- Tag ID `13` centered on the payload left face
+- Tag ID `14` centered on the payload back face
+- Tag ID `15` centered on the payload right face
+
+When the front face points toward the camera, camera POV should be:
+
+```text
+          ID 12
+
+ID 15              ID 13
+
+       ID 14 hidden
+```
 
 Run it from this folder with:
 
@@ -21,9 +35,8 @@ cd ~/crane_ws/ops/wall_tracker/single_marker_tracker
 ./run_wall_tracker.sh -- --ros
 ```
 
-The layout is `tag_layout_8x8x6in_36h11_left12_right13.json`. If the left/right
-sign is flipped in the display, swap the `center_m` and `normal_m` signs for IDs
-12 and 13 in that JSON.
+The layout is
+`tag_layout_8x8x6in_36h11_12front_13left_14back_15right.json`.
 
 ## Tag Layout
 

@@ -1799,10 +1799,12 @@ def compose_view(
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    default_layout = Path(__file__).with_name("tag_layout.json")
+    default_layout = Path(__file__).with_name(
+        "tag_layout_8x8x6in_36h11_12front_13left_14back_15right.json"
+    )
     parser = argparse.ArgumentParser(description="Standalone OAK AprilTag wall tracker")
-    parser.add_argument("--ip", default=os.environ.get("OAK_IP", "192.168.0.153"))
-    parser.add_argument("--camera-socket", default="CAM_B")
+    parser.add_argument("--ip", default=os.environ.get("OAK_IP", ""))
+    parser.add_argument("--camera-socket", default="CAM_A")
     parser.add_argument("--layout", type=Path, default=default_layout)
     parser.add_argument("--tag-family", default=None)
     parser.add_argument("--tag-size", type=float, default=None)
