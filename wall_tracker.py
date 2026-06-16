@@ -364,6 +364,7 @@ class PoseEstimate:
     pose_source: str
     center_source: str
     origin_status: str
+    tracking_center_m: np.ndarray
     target_center_px: tuple[float, float]
     visible_center_px: tuple[float, float]
     reproj_error_px: float
@@ -970,22 +971,20 @@ class RigidTagPoseEstimator:
             d for d in detections if int(d.tag_id) in primary_visible
         ] if primary_visible else detections
         object_points, image_points = self._collect_points(pose_dets)
+        tracking_center_m = self._object_center_from_detections(pose_dets)
 
         rmat, _ = cv2.Rodrigues(rvec)
         rel_t, rel_r = self.session.relative(tvec, rmat)
         rel_euler = rotation_matrix_to_euler_xyz_deg(rel_r)
         rel_t_smooth = self.translation_filter.filter(rel_t)
-        visible_center_px = self._visible_center_px(detections)
-        target_center_px, center_source = self._display_center_px(
-            rvec, tvec, camera_matrix, pnp_dist, visible_center_px, pose_source
-        )
-        visible_object_center_m = np.mean(object_points.reshape(-1, 3), axis=0)
+        visible_center_px = self._visible_center_px(pose_dets)
+        target_center_px, center_source = visible_center_px, "face-tags"
         operator_abs, depth_m, depth_source = self._operator_translation(
             tvec,
             rmat,
             target_center_px,
             visible_center_px,
-            visible_object_center_m,
+            tracking_center_m,
             camera_matrix,
             depth_frame,
         )
@@ -1014,9 +1013,9 @@ class RigidTagPoseEstimator:
         status = "GOOD"
         if pose_source.startswith("single"):
             status = "WARN"
-        elif center_err_mm > 5.0:
-            status = "WARN"
         elif pose_source == "face pair":
+            status = "WARN"
+        elif len(primary_visible) < 3:
             status = "WARN"
         pose = PoseEstimate(
             rvec=rvec.reshape(3, 1),
@@ -1037,6 +1036,7 @@ class RigidTagPoseEstimator:
             pose_source=pose_source,
             center_source=center_source,
             origin_status=origin_status,
+            tracking_center_m=tracking_center_m,
             target_center_px=target_center_px,
             visible_center_px=visible_center_px,
             reproj_error_px=reproj,
@@ -1057,7 +1057,7 @@ class RigidTagPoseEstimator:
             status=status,
             message=(
                 f"{len(tag_ids)} tag(s), {reproj:.1f}px, "
-                f"center_err={center_err_mm:.1f}mm, {pose_source}{face_s}"
+                f"center=face-tags, {pose_source}{face_s}"
             ),
             timestamp=timestamp,
         )
@@ -1097,26 +1097,15 @@ class RigidTagPoseEstimator:
         c = np.mean(pts, axis=0)
         return float(c[0]), float(c[1])
 
-    def _display_center_px(
-        self,
-        rvec: np.ndarray,
-        tvec: np.ndarray,
-        camera_matrix: np.ndarray,
-        dist_coeffs: Optional[np.ndarray],
-        visible_center_px: tuple[float, float],
-        pose_source: str,
-    ) -> tuple[tuple[float, float], str]:
-        if not pose_source.startswith("single") or not self.layout.is_planar:
-            pts, _ = cv2.projectPoints(
-                self.layout.target_center_m.reshape(1, 3),
-                rvec,
-                tvec,
-                camera_matrix,
-                dist_coeffs,
-            )
-            p = pts.reshape(-1, 2)[0]
-            return (float(p[0]), float(p[1])), "layout"
-        return visible_center_px, "visible-tags"
+    def _object_center_from_detections(self, detections: list) -> np.ndarray:
+        centers = []
+        for det in detections:
+            tag = self.layout.tags.get(int(det.tag_id))
+            if tag is not None:
+                centers.append(np.asarray(tag.center_m, dtype=np.float64).reshape(3))
+        if centers:
+            return np.mean(np.vstack(centers), axis=0)
+        return self.layout.target_center_m.copy()
 
     def _operator_translation(
         self,
@@ -1124,26 +1113,21 @@ class RigidTagPoseEstimator:
         rmat: np.ndarray,
         target_center_px: tuple[float, float],
         visible_center_px: tuple[float, float],
-        visible_object_center_m: np.ndarray,
+        tracking_center_m: np.ndarray,
         camera_matrix: np.ndarray,
         depth_frame: Optional[np.ndarray],
     ) -> tuple[np.ndarray, float, str]:
         depth_m = self._sample_depth_m(depth_frame, visible_center_px)
         if depth_m is not None:
-            target_cam = _target_center_camera(rmat, tvec, self.layout.target_center_m)
-            visible_cam = _target_center_camera(rmat, tvec, visible_object_center_m)
-            center_depth_m = float(depth_m + (target_cam[2] - visible_cam[2]))
-            if not math.isfinite(center_depth_m) or center_depth_m <= 0.0:
-                center_depth_m = float(depth_m)
             return (
                 pixel_depth_to_operator_xyz(
-                    target_center_px[0], target_center_px[1], center_depth_m, camera_matrix
+                    target_center_px[0], target_center_px[1], depth_m, camera_matrix
                 ),
-                center_depth_m,
+                depth_m,
                 "stereo",
             )
 
-        target_cam = _target_center_camera(rmat, tvec, self.layout.target_center_m)
+        target_cam = _target_center_camera(rmat, tvec, tracking_center_m)
         fallback = pnp_tvec_to_operator_xyz(target_cam)
         return fallback, float(fallback[1]), "pnp fallback"
 
@@ -1617,7 +1601,8 @@ def _draw_axes(
     scale_x: float,
     scale_y: float,
 ) -> None:
-    center = np.asarray(target_center_m, dtype=np.float64).reshape(3)
+    _ = target_center_m
+    center = np.asarray(pose.tracking_center_m, dtype=np.float64).reshape(3)
     obj_pts = np.vstack(
         [
             center,
@@ -1644,12 +1629,12 @@ def _draw_axes(
     cv2.putText(image, "X", tuple(pts[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 255), 2)
     cv2.putText(image, "Y", tuple(pts[2]), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 0), 2)
     cv2.putText(image, "Z", tuple(pts[3]), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 0, 0), 2)
-    center_color = (0, 255, 0) if pose.center_err_mm < 5.0 else (0, 255, 255)
+    center_color = (0, 255, 0) if len(pose.primary_face_ids) >= 3 else (0, 255, 255)
     cv2.circle(image, o, 9, center_color, -1)
     cv2.circle(image, o, 15, center_color, 2)
     cv2.putText(
         image,
-        "CENTER",
+        "FACE CENTER",
         (o[0] + 12, o[1] - 12),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.52,
@@ -1705,8 +1690,7 @@ def _draw_text_panel(
                 else ""
             )
             lines.append(
-                f"pose={p.pose_source}  center={p.center_source}  "
-                f"center_err={p.center_err_mm:.1f}mm{face_s}{origin_s}"
+                f"pose={p.pose_source}  center={p.center_source}{face_s}{origin_s}"
             )
 
     if status == "GOOD":
@@ -1836,7 +1820,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--no-depth", action="store_true",
                         help="Disable OAK stereo depth and use PnP translation only")
     parser.add_argument("--depth-roi-px", type=int, default=21,
-                        help="Median depth sampling window around target center")
+                        help="Median depth sampling window around selected face center")
     parser.add_argument("--depth-min-m", type=float, default=0.20)
     parser.add_argument("--depth-max-m", type=float, default=8.0)
     parser.add_argument("--depth-right-socket", default="CAM_C")

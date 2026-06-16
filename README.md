@@ -44,8 +44,8 @@ The old planar wall layout remains available in `tag_layout.json` and assumes:
 
 Measure your installed tag centers and update the layout file if the spacing
 differs. For cube layouts, each tag defines `normal_m` and `up_m` so the tracker
-knows which cube face the tag belongs to. The `CENTER` marker and X/Y top-down
-plot represent `target_center_m`, not the currently visible face.
+knows which cube face the tag belongs to. The `FACE CENTER` marker and X/Y
+top-down plot currently represent the center of the selected visible face tags.
 
 ## Run
 
@@ -179,12 +179,11 @@ The stream reports both absolute position and relative displacement:
 - `pose`: `multi-tag` when the configured 3-tag layout fits, or
   `single-tag ID...` when the rigid layout is inconsistent and the tracker is
   recovering from one visible tag
-- `CENTER`: yellow marker for the tracked translation point; this uses
-  `target_center_m` during multi-tag tracking and the visible tag centroid during
-  single-tag recovery
-- `center`: `layout` when the configured `target_center_m` is being projected
-  from the multi-tag pose, or `visible-tags` when the tracker falls back to the
-  detected tag centroid during single-tag recovery
+- `FACE CENTER`: marker for the tracked translation point; this is the centroid
+  of the selected face tags in the image. It is green with a full three-tag face
+  and yellow during partial-face or single-tag fallback.
+- `center`: `face-tags` while the tracker is using the selected face-tag
+  centroid for translation and depth sampling.
 - `origin`: shown in relative mode; `warming` while the tracker waits for a
   stable stereo-backed zero point, then `locked`
 
@@ -193,11 +192,10 @@ combined motion is handled as one pose estimate rather than separate heuristics.
 Stereo depth is used to improve the displayed forward `Y` translation; PnP is
 still the fallback when stereo pixels are invalid or depth is disabled.
 
-For the cube target, all 12 tags share one rigid cube-centered model. When the
-visible face changes, the tracker solves for the same geometric center instead
-of resetting translation to the new face. A face handoff during in-place
-rotation should mostly change roll, pitch, or yaw while keeping the top-down
-center stable.
+For the cube target, all 12 tags share one rigid model for orientation, but the
+reported translation point is currently the center of the three tags on the
+selected visible face. The cube geometric center remains in the layout for later
+use, but it is not the active tracked point in this mode.
 
 ## Sampling Rate
 
@@ -208,7 +206,7 @@ The fast path is:
 - Stream composition and JPEG encoding throttled to `--display-fps`
 - Display stream at lower FPS than detection, or detection-frame reuse with
   `--stream-from-detect-only`
-- Optional OAK stereo depth stream sampled around the target center
+- Optional OAK stereo depth stream sampled around the selected face center
 - Pose solve only for the configured tag IDs
 - No ROS publishers or dashboard integration
 - Planar PnP candidate continuity so fast rotations prefer the closest plausible pose
