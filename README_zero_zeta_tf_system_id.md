@@ -49,7 +49,7 @@ millimeters with `--input-scale 1000`.
 ## Basic Use
 
 ```bash
-source /opt/ros/humble/setup.bash
+source /opt/ros/jazzy/setup.bash
 
 python3 zero_zeta_tf_system_id.py \
   --topic /apriltags/base_cam/rgb/tf \
@@ -128,4 +128,3 @@ ros2 topic hz /apriltags/base_cam/rgb/tf
 ros2 topic echo /apriltags/base_cam/rgb/tf --once
 ros2 topic echo /payload/zero_zeta_id
 ```
-
