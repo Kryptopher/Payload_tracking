@@ -1,16 +1,33 @@
 # Zero-Zeta TF System ID
 
-`zero_zeta_tf_system_id.py` is a standalone ROS 2 helper for estimating the
-dominant payload swing frequency from an AprilTag/TF position signal.
+`zero_zeta_tf_system_id.py` is a standalone ROS 2 helper for estimating payload
+swing parameters from an AprilTag/TF position signal.
 
 It subscribes to a `tf2_msgs/msg/TFMessage`, extracts one tag translation
-component, and fits a zero-damping sinusoid:
+component, and fits one of two models.
+
+Zero-zeta mode fits:
 
 ```text
 y(t) = c0 + c1*t + a*cos(omega*t) + b*sin(omega*t)
 ```
 
-The output assumes:
+Damped-grid mode fits:
+
+```text
+y(t) = c0 + c1*t + exp(-sigma*t)*
+       (a*cos(omega_d*t) + b*sin(omega_d*t))
+```
+
+For damped-grid mode:
+
+```text
+omega_n = sqrt(omega_d^2 + sigma^2)
+zeta = sigma / omega_n
+T_shaper = pi / omega_d
+```
+
+For zero-zeta mode:
 
 ```text
 zeta = 0
@@ -18,8 +35,9 @@ T_shaper = pi / omega
 period = 2*pi / omega
 ```
 
-This is useful when the adaptive input shaper needs an online estimate of
-`omega` but the damping estimate is too noisy to trust.
+Zero-zeta mode is useful when the adaptive input shaper needs an online
+estimate of `omega` but the damping estimate is too noisy to trust. Damped-grid
+mode is available when an approximate `zeta` estimate is useful.
 
 ## Expected Input
 
@@ -46,6 +64,10 @@ transform.translation.x/y/z
 By ROS convention, TF translation is in meters. The script converts to
 millimeters with `--input-scale 1000`.
 
+The transform can be camera-relative if the camera is fixed. A fixed camera
+frame is still a fixed coordinate system, so the swing frequency is unchanged.
+Use the translation axis with the clearest oscillation.
+
 ## Basic Use
 
 ```bash
@@ -56,6 +78,7 @@ python3 zero_zeta_tf_system_id.py \
   --child-frame-id tag36h11:6 \
   --axis x \
   --input-scale 1000 \
+  --fit-mode zero-zeta \
   --history-s 20 \
   --warmup-s 4 \
   --half-period-min-s 0.5 \
@@ -68,6 +91,23 @@ motion, `--axis z` for depth motion, or `--axis xy` for planar magnitude.
 
 If the TF message contains multiple tags, always set `--child-frame-id`; the
 order of transforms in a `TFMessage` is not guaranteed.
+
+To also estimate damping ratio:
+
+```bash
+python3 zero_zeta_tf_system_id.py \
+  --topic /apriltags/base_cam/rgb/tf \
+  --child-frame-id tag36h11:6 \
+  --axis x \
+  --input-scale 1000 \
+  --fit-mode damped-grid \
+  --zeta-min 0.0 \
+  --zeta-max 0.2 \
+  --zeta-grid-count 25
+```
+
+This is a bounded grid search, not nonlinear optimization. It is intentionally
+conservative and rejects poorly conditioned fits.
 
 ## Output
 
@@ -92,11 +132,14 @@ rmse_mm,
 nrmse,
 p2p_mm,
 num_samples,
-sample_rate_hz
+sample_rate_hz,
+damped_omega_rad_s,
+decay_rate_s_inv,
+condition,
+fit_method_code
 ```
 
-`zeta` is always `0.0` because this method intentionally estimates only
-frequency.
+`fit_method_code` is `0` for zero-zeta and `1` for damped-grid.
 
 ## Logging
 
